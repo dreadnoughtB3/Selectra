@@ -54,9 +54,9 @@ const Play = () => {
           </div>
           <div id="questions" className="flex flex-col items-center justify-center w-3/5">
             {questions.map((q, index) => (
-              <div 
+              <div key={index}
               className="flex flex-col items-center justify-center w-full bg-blue-50 border-2 m-3">
-                <div key={index} className="flex flex-col items-center justify-center w-full">
+                <div className="flex flex-col items-center justify-center w-full">
                   <p>Q.{index+1}, {q.question}</p>
                   <div>
                     <label className="mx-2">
@@ -99,7 +99,7 @@ const Play = () => {
             ))}
           </div>
           <Button className="bg-gray-100 text-brack border-4 border-black m-2">
-            <Link to="/play">結果へ</Link>
+            <Link to="/result">結果へ</Link>
           </Button>
         </div>
       </div>
