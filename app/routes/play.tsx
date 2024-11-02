@@ -1,9 +1,10 @@
 import { data } from "@remix-run/react";
 import { useState, useEffect } from "react"
-import { Link } from "@remix-run/react";
+import { Link, useNavigate } from "@remix-run/react";
 import { Button } from "~/components/ui/button";
 
 const Play = () => {
+  const navigate = useNavigate();
   const [matching, setMatching] = useState({
     title: "パリーグ球団",
     authorName: "ななし",
@@ -16,39 +17,78 @@ const Play = () => {
     questions: [
       {
         question: "あなたの応援スタイルは？",
-        choice: {
-          text: "負けていても応援できればよい！",
-          paramChanges: [
-            {
-              targetParam: "params",
-              changeValue: 0
-            }
-          ]
-        }
+        choices: [
+          {
+            choiceId: 0,
+            choiceName: "勝利至上主義",
+            paramChanges: [
+              {
+                targetParamName: "param1",
+                changeValues: 100
+              }
+            ]
+          },
+          {
+            choiceId: 1,
+            choiceName: "負けても応援",
+            paramChanges: [
+              {
+                targetParamName: "param1",
+                changeValues: 0
+              }
+            ]
+          }
+        ]
       },
       {
         question: "住むなら？",
-        choice: {
-          text: "田舎！",
-          paramChanges: [
-            {
-              targetParam: "params",
-              changeValue: 0
-            }
-          ]
-        }
+        choices: [
+          {
+            choiceId: 0,
+            choiceName: "田舎",
+            paramChanges: [
+              {
+                targetParamName: "param2",
+                changeValues: 100
+              }
+            ]
+          },
+          {
+            choiceId: 1,
+            choiceName: "都会",
+            paramChanges: [
+              {
+                targetParamName: "param2",
+                changeValues: 0
+              }
+            ]
+          }
+        ]
       },
       {
         question: "お金は好き？",
-        choice: {
-          text: "大好き！",
-          paramChanges: [
-            {
-              targetParam: "params",
-              changeValue: 0
-            }
-          ]
-        }
+        choices: [
+          {
+            choiceId: 0,
+            choiceName: "大好き",
+            paramChanges: [
+              {
+                targetParamName: "param3",
+                changeValues: 100
+              }
+            ]
+          },
+          {
+            choiceId: 1,
+            choiceName: "そうでもない",
+            paramChanges: [
+              {
+                targetParamName: "param3",
+                changeValues: 0
+              }
+            ]
+          }
+        ]
       }
     ],
     matchingRule:[
@@ -59,27 +99,7 @@ const Play = () => {
       }
     ]
   });
-  // const [questions, setQuestions] = useState([
-  //   {
-  //     question: "What is your favorite color?",
-  //     choice1: "Red",
-  //     choice2: "Blue",
-  //     selectedOption: ""
-  //   },
-  //   {
-  //     question: "What is your favorite animal?",
-  //     choice1: "Dog",
-  //     choice2: "Cat",
-  //     selectedOption: ""
-  //   },
-  //   {
-  //     question: "What is your favorite food?",
-  //     choice1: "Pizza",
-  //     choice2: "Sushi",
-  //     selectedOption: ""
-  //   }
-  // ]);
-  // const [matching, setMatching] = useState([]);
+
   const [selectedOption, setSelectedOption] = useState('');
 
   // const handleOptionChange = (index: number, value: string) => {
@@ -93,6 +113,35 @@ const Play = () => {
       i === index ? { ...q, selectedOption: value } : q
     );
     setMatching((prevState) => ({ ...prevState, questions: newQuestions }));
+  };
+
+  const handleSubmit = async () => {
+    const choiceParams = matching.questions.map((q) => ({
+      choiceId: q.selectedOption,
+      value: q.choices.find(choice => choice.choiceId === q.selectedOption)?.paramChanges[0]?.changeValues || 0
+    }));
+    
+    const requestBody = {
+      matchingId: "exampleMatchingId", // 適切なmatchingIdを設定
+      choiceParams: choiceParams
+    };
+
+    try {
+      const response = await fetch('/matching/result_output', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestBody)
+      });
+
+      const resultData = await response.json();
+
+      navigate("/result", { state: { recommend: resultData.recommend, url: resultData.url } });
+
+    } catch (error) {
+      console.error('Error:', error);
+    }
   };
 
     
@@ -123,47 +172,24 @@ const Play = () => {
                 <div className="flex flex-col items-center justify-center w-full">
                   <p>Q.{index+1}, {q.question}</p>
                   <div>
-                    <label className="mx-2">
-                      { q.choice.text }
-                      賛成する
-                      <input
-                      type="radio"
-                      value="option1"
-                      checked={q.selectedOption === 'option1'}
-                      onChange={(e) => handleOptionChange(index, e.target.value)}
-                      />
-                    </label>
-                    <label className="mx-2">
-                      <input
-                      type="radio"
-                      value="option2"
-                      checked={q.selectedOption === 'option2'}
-                      onChange={(e) => handleOptionChange(index, e.target.value)}
-                      />
-                    </label>
-                    <label className="mx-2">
-                      <input
-                      type="radio"
-                      value="option3"
-                      checked={q.selectedOption === 'option3'}
-                      onChange={(e) => handleOptionChange(index, e.target.value)}
-                      />
-                    </label>
-                    <label className="mx-2">
-                      <input
-                      type="radio"
-                      value="option4"
-                      checked={q.selectedOption === 'option4'}
-                      onChange={(e) => handleOptionChange(index, e.target.value)}
-                      />
-                      反対する
-                    </label>
+                    {q.choices.map((choice, choiceIndex) => (
+                      <label key={choiceIndex} className="mx-2">
+                        {choice.choiceName}
+                        <input
+                          type="radio"
+                          value={choice.choiceId}
+                          checked={q.selectedOption === choice.choiceId}
+                          onChange={() => handleOptionChange(questionIndex, choice.choiceId)}
+                        />
+                      </label>
+                    ))}
                   </div>
                 </div>
             </div>
             ))}
           </div>
-          <Button className="bg-gray-100 text-brack border-4 border-black m-2">
+          <Button onClick={ handleSubmit }
+          className="bg-gray-100 text-brack border-4 border-black m-2">
             <Link to="/result">結果へ</Link>
           </Button>
         </div>
