@@ -2,101 +2,45 @@ import { data } from "@remix-run/react";
 import { useState, useEffect } from "react"
 import { Link, useNavigate, useLocation } from "@remix-run/react";
 import { Button } from "~/components/ui/button";
+import { useFetcher } from '@remix-run/react';
+import { json, ActionFunction } from '@remix-run/node';
+
+export const action: ActionFunction = async ({ request }) => {
+  const data = {
+    matchingId: "1f3f2d2f-7c12-4218-ab2e-1512d4d86835",
+    choiceParams: [
+      { choiceName: "和食好き", value: 10 },
+      { choiceName: "洋食好き", value: 0 },
+      { choiceName: "辛さ耐性", value: 5 },
+      { choiceName: "ベジタリアン適性", value: 0 }
+    ]
+  };
+
+  try {
+    const response = await fetch('https://einx281re1.execute-api.ap-northeast-1.amazonaws.com/prod/matching/result_output', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch data from the API");
+    }
+
+    const result = await response.json();
+    return json(result);
+
+  } catch (error) {
+    console.error('Error processing FormData:', error);
+    return json({ success: false, error: 'Failed to process FormData' }, { status: 500 });
+  }
+};
 
 const Play = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // const [matching, setMatching] = useState({
-  //   title: "パリーグ球団",
-  //   authorName: "ななし",
-  //   description: "独断と偏見であなたが推すべきパリーグの球団をお教えします！",
-  //   params: [
-  //     "param1",
-  //     "param2",
-  //     "param3"
-  // ],
-  //   questions: [
-  //     {
-  //       question: "あなたの応援スタイルは？",
-  //       choices: [
-  //         {
-  //           choiceId: "0",
-  //           choiceName: "勝利至上主義",
-  //           paramChanges: [
-  //             {
-  //               targetParamName: "param1",
-  //               changeValues: 100
-  //             }
-  //           ]
-  //         },
-  //         {
-  //           choiceId: "1",
-  //           choiceName: "負けても応援",
-  //           paramChanges: [
-  //             {
-  //               targetParamName: "param1",
-  //               changeValues: 0
-  //             }
-  //           ]
-  //         }
-  //       ],
-  //       selectedOption: null
-  //     },
-  //     {
-  //       question: "住むなら？",
-  //       choices: [
-  //         {
-  //           choiceId: "0",
-  //           choiceName: "田舎",
-  //           paramChanges: [
-  //             {
-  //               targetParamName: "param2",
-  //               changeValues: 100
-  //             }
-  //           ]
-  //         },
-  //         {
-  //           choiceId: "1",
-  //           choiceName: "都会",
-  //           paramChanges: [
-  //             {
-  //               targetParamName: "param2",
-  //               changeValues: 0
-  //             }
-  //           ]
-  //         }
-  //       ],
-  //       selectedOption: null
-  //     },
-  //     {
-  //       question: "お金は好き？",
-  //       choices: [
-  //         {
-  //           choiceId: "0",
-  //           choiceName: "大好き",
-  //           paramChanges: [
-  //             {
-  //               targetParamName: "param3",
-  //               changeValues: 100
-  //             }
-  //           ]
-  //         },
-  //         {
-  //           choiceId: "1",
-  //           choiceName: "そうでもない",
-  //           paramChanges: [
-  //             {
-  //               targetParamName: "param3",
-  //               changeValues: 0
-  //             }
-  //           ]
-  //         }
-  //       ],
-  //       selectedOption: null
-  //     }
-  //   ]
-  // });
-  // const [matching, setMatching] = useState<Matching | null>(null);
   interface Matching {
     title: string;
     authorName: string;
@@ -122,6 +66,11 @@ const Play = () => {
   }
 
   const [matching, setMatching] = useState(null);
+
+  const fetcher = useFetcher();
+  const handleResult = () => {
+    fetcher.submit(null, { method: "post" });
+  };
 
 
   const matchingId =  location.state?.matchingId;
@@ -159,38 +108,6 @@ const Play = () => {
   };
 
   const handleSubmit = async () => {
-    const choiceParams = matching.questions.map((q) => ({
-      choiceName: q.selectedOption,
-      value: q.choices.find(choice => choice.choiceName === q.selectedOption)?.paramChanges[0]?.changeValues || 0
-    }));
-    
-    const requestBody = {
-      // matchingId: matchingId, // 適切なmatchingIdを設定
-      // choiceParams: choiceParams
-      matchingId: "1f3f2d2f-7c12-4218-ab2e-1512d4d86835",
-      choiceParams:  [{"choiceName": "和食好き", "value": 10}, {"choiceName": "洋食好き", "value": 0}, {"choiceName": "辛さ耐性", "value": 5}, {"choiceName": "ベジタリアン適性", "value": 0}]
-    };
-
-    console.log(requestBody);
-
-    try {
-      const response = await fetch('https://einx281re1.execute-api.ap-northeast-1.amazonaws.com/prod/matching/result_output', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Request-Method': 'POST',
-          'Access-Control-Request-Headers': 'Content_Type'
-        },
-        body: JSON.stringify(requestBody)
-      });
-
-      const resultData = await response.json();
-
-      navigate("/result", { state: { recommend: resultData.recommend, url: resultData.url } });
-
-    } catch (error) {
-      console.error('Error:', error);
-    }
   };
 
   if ( matching == null ){
@@ -234,10 +151,20 @@ const Play = () => {
             </div>
             ))}
           </div>
-          <Button onClick={ handleSubmit }
+          <Button onClick={ handleResult }
           className="bg-gray-100 text-brack border-4 border-black m-2">
-            <Link to="/result">結果へ</Link>
+            データ取得
           </Button>
+          {fetcher.state === "submitting" ? (
+              <p>データを取得中...</p>
+            ) : fetcher.data ? (
+              // 取得結果の表示
+              fetcher.data.error ? (
+                <p>{fetcher.data.error}</p>
+              ) : (
+                <pre>{JSON.stringify(fetcher.data, null, 2)}</pre>
+              )
+            ) : null}
         </div>
       </div>
     )
