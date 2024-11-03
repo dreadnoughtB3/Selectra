@@ -1,10 +1,11 @@
 import { data } from "@remix-run/react";
 import { useState, useEffect } from "react"
-import { Link, useNavigate } from "@remix-run/react";
+import { Link, useNavigate, useLocation } from "@remix-run/react";
 import { Button } from "~/components/ui/button";
 
 const Play = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [matching, setMatching] = useState({
     title: "パリーグ球団",
     authorName: "ななし",
@@ -19,7 +20,7 @@ const Play = () => {
         question: "あなたの応援スタイルは？",
         choices: [
           {
-            choiceId: 0,
+            choiceId: "0",
             choiceName: "勝利至上主義",
             paramChanges: [
               {
@@ -29,7 +30,7 @@ const Play = () => {
             ]
           },
           {
-            choiceId: 1,
+            choiceId: "1",
             choiceName: "負けても応援",
             paramChanges: [
               {
@@ -38,13 +39,14 @@ const Play = () => {
               }
             ]
           }
-        ]
+        ],
+        selectedOption: null
       },
       {
         question: "住むなら？",
         choices: [
           {
-            choiceId: 0,
+            choiceId: "0",
             choiceName: "田舎",
             paramChanges: [
               {
@@ -54,7 +56,7 @@ const Play = () => {
             ]
           },
           {
-            choiceId: 1,
+            choiceId: "1",
             choiceName: "都会",
             paramChanges: [
               {
@@ -63,13 +65,14 @@ const Play = () => {
               }
             ]
           }
-        ]
+        ],
+        selectedOption: null
       },
       {
         question: "お金は好き？",
         choices: [
           {
-            choiceId: 0,
+            choiceId: "0",
             choiceName: "大好き",
             paramChanges: [
               {
@@ -79,7 +82,7 @@ const Play = () => {
             ]
           },
           {
-            choiceId: 1,
+            choiceId: "1",
             choiceName: "そうでもない",
             paramChanges: [
               {
@@ -88,37 +91,76 @@ const Play = () => {
               }
             ]
           }
-        ]
-      }
-    ],
-    matchingRule:[
-      {
-        highestParams: "",
-        result: "",
-        url: ""
+        ],
+        selectedOption: null
       }
     ]
   });
+  // const [matching, setMatching] = useState<Matching | null>(null);
+  interface Matching {
+    title: string;
+    authorName: string;
+    description: string;
+    params: string[];
+    questions: {
+      question: string;
+      choices: {
+        choiceId: string;
+        choiceName: string;
+        paramChanges: {
+          targetParamName: string;
+          changeValues: number;
+        }[];
+      }[];
+      selectedOption: string | null;
+    }[];
+    matchingRule: {
+      highestParams: string;
+      result: string;
+      url: string;
+    }[];
+  }
 
-  const [selectedOption, setSelectedOption] = useState('');
+  const matchingId =  location.state?.matchingId;
 
-  // const handleOptionChange = (index: number, value: string) => {
-  //   const newQuestions = [...matching.questions];
-  //   newQuestions[index].selectedOption = value;
-  //   setQuestions(newQuestions);
-  // };
+  useEffect(() =>{
+    const fetchMatchingData = async () => {
+      try {
+        const response = await fetch(`/matching/match`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ matchingId })
+        });
+        const data: Matching = await response.json();
+        
+        setMatching({
+          ...data,
+          questions: data.questions.map(q => ({
+            ...q,
+            selectedOption: null // selectedOptionを初期化
+          }))
+        });
+      } catch (error) {
+        console.error("Error fetching matching data:", error);
+      }
+    };
+
+    fetchMatchingData();
+  },[matchingId]);
 
   const handleOptionChange = (index: number, value: string) => {
     const newQuestions = matching.questions.map((q, i) =>
       i === index ? { ...q, selectedOption: value } : q
     );
-    setMatching((prevState) => ({ ...prevState, questions: newQuestions }));
+    setMatching({ ...matching, questions: newQuestions });
   };
 
   const handleSubmit = async () => {
     const choiceParams = matching.questions.map((q) => ({
       choiceId: q.selectedOption,
-      value: q.choices.find(choice => choice.choiceId === q.selectedOption)?.paramChanges[0]?.changeValues || 0
+      value: q.choices.find(choice => choice.choiceName === q.selectedOption)?.paramChanges[0]?.changeValues || 0
     }));
     
     const requestBody = {
@@ -143,15 +185,6 @@ const Play = () => {
       console.error('Error:', error);
     }
   };
-
-    
-
-  useEffect(() =>{
-    fetch("matching/match")
-    .then(resp => resp.json())
-    .then(matching => setMatching(matching))
-    .catch(e => console.log(e))
-  },[]);
 
   return (
       <div className="flex w-full h-screen items-center justify-center bg-blue-900">
@@ -178,8 +211,8 @@ const Play = () => {
                         <input
                           type="radio"
                           value={choice.choiceId}
-                          checked={q.selectedOption === choice.choiceId}
-                          onChange={() => handleOptionChange(questionIndex, choice.choiceId)}
+                          checked={q.selectedOption === choice.choiceName}
+                          onChange={() => handleOptionChange(index, choice.choiceName)}
                         />
                       </label>
                     ))}
