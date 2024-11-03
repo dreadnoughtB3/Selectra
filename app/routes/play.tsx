@@ -121,20 +121,17 @@ const Play = () => {
     }[];
   }
 
-  const [matching, setMatching] = useState([]);
+  const [matching, setMatching] = useState(null);
 
 
-  // const matchingId =  location.state?.matchingId;
-  const matchingId = "1f3f2d2f-7c12-4218-ab2e-1512d4d86835";
+  const matchingId =  location.state?.matchingId;
+  // const matchingId = "1f3f2d2f-7c12-4218-ab2e-1512d4d86835";
 
   useEffect(() => {
     const fetchMatchingData = async () => {
       try {
-        const response = await fetch(`https://einx281re1.execute-api.ap-northeast-1.amazonaws.com/prod/matching/match?matchingId=${matchingId}`, {
+        const response = await fetch(`https://einx281re1.execute-api.ap-northeast-1.amazonaws.com/prod/matching/match?id=${matchingId}`, {
           method: 'GET',
-          // headers: {
-          //   'Content-Type': 'application/json'
-          // }
         });
         const data: Matching = await response.json();
         
@@ -151,7 +148,7 @@ const Play = () => {
     };
 
     fetchMatchingData();
-  }, [matchingId]);
+  }, []);
 
 
   const handleOptionChange = (index: number, value: string) => {
@@ -168,17 +165,21 @@ const Play = () => {
     }));
     
     const requestBody = {
-      matchingId: matchingId, // 適切なmatchingIdを設定
-      choiceParams: choiceParams
+      // matchingId: matchingId, // 適切なmatchingIdを設定
+      // choiceParams: choiceParams
+      matchingId: "1f3f2d2f-7c12-4218-ab2e-1512d4d86835",
+      choiceParams:  [{"choiceName": "和食好き", "value": 10}, {"choiceName": "洋食好き", "value": 0}, {"choiceName": "辛さ耐性", "value": 5}, {"choiceName": "ベジタリアン適性", "value": 0}]
     };
 
     console.log(requestBody);
 
     try {
-      const response = await fetch('/matching/result_output', {
+      const response = await fetch('https://einx281re1.execute-api.ap-northeast-1.amazonaws.com/prod/matching/result_output', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Access-Control-Request-Method': 'POST',
+          'Access-Control-Request-Headers': 'Content_Type'
         },
         body: JSON.stringify(requestBody)
       });
@@ -192,20 +193,26 @@ const Play = () => {
     }
   };
 
+  if ( matching == null ){
+    return (
+      <>
+        <span>Loading...</span>
+      </>
+    )
+  }
   return (
       <div className="flex w-full h-screen items-center justify-center bg-blue-900">
         <div className="flex flex-col items-center justify-center w-4/5 h-4/5 bg-white">
           <div id="title" className="text-4xl">
-            <p>あなたが推すべき</p>
-            <span className="text-5xl">{ matching.title }</span>は？
+            <span className="text-5xl">{ matching.title}</span>
           </div>
           <div id="introduction" 
           className="flex flex-col items-center justify-center w-3/5 bg-blue-50 border-2 m-3">
-            { matching.authorName }
+            { matching.authorName}
             { matching.description }
           </div>
           <div id="questions" className="flex flex-col items-center justify-center w-3/5">
-            {matching.questions.map((q, index) => (
+            { matching.questions.map((q, index) => (
               <div key={index}
               className="flex flex-col items-center justify-center w-full bg-blue-50 border-2 m-3">
                 <div className="flex flex-col items-center justify-center w-full">

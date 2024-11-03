@@ -6,20 +6,6 @@ import { Button } from "~/components/ui/button";;
 const Play = () => {
   const  recommend  =  "softbank" ;
 
-  // const [result, setResult] = useState({
-  //   recommend: "ソフトバンク", 
-  //   url: "???"
-  // });
-
-  // const [result, setResult] = useState({});
-
-  // useEffect(() =>{
-  //   fetch("matching/result_output")
-  //   .then(resp => resp.json())
-  //   .then(result => setResult(result))
-  //   .catch(e => console.log(e))
-  // },[]);
-
   const location = useLocation();
   // const { recommend, url } = location.state || {};
   
