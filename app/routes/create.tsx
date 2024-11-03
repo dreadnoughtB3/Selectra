@@ -15,28 +15,18 @@ const MAX_PHASE = 4
 const MIN_PHASE = 1
 
 export const action: ActionFunction = async ({ request }) => {
-  const formData = await request.formData();
-  const jsonData = JSON.parse(formData.get('data') as string);
-
   try {
-    const response = await fetch('https://einx281re1.execute-api.ap-northeast-1.amazonaws.com/prod/matching/post', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(jsonData),
+    const formData = await request.formData();
+
+    const dataObject: { [key: string]: string } = {};
+    formData.forEach((value, key) => {
+      dataObject[key] = value as string;
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const responseData = await response.json();
-
-    return json({ success: true, data: responseData });
+    return json({ success: true, data: dataObject });
   } catch (error) {
-    console.error('Error submitting data:', error);
-    return json({ success: false, error: 'Failed to submit data' }, { status: 500 });
+    console.error('Error processing FormData:', error);
+    return json({ success: false, error: 'Failed to process FormData' }, { status: 500 });
   }
 };
 
@@ -76,9 +66,10 @@ const Create = () => {
 
   const handleSubmit = () => {
     const transformedData = transformData();
+    console.log(transformedData)
     fetcher.submit(
       { data: JSON.stringify(transformedData) },
-      { method: 'post' }
+      { method: 'POST' }
     );
   };
 
