@@ -4,10 +4,10 @@ import { Link, useLocation } from "@remix-run/react";
 import { Button } from "~/components/ui/button";;
 
 const Play = () => {
-  const  recommend  =  "softbank" ;
+  // const  recommend  =  "Starbucks" ;
 
   const location = useLocation();
-  // const { recommend, url } = location.state || {};
+  const { recommend, url } = location.state || {};
   
 
   return (
@@ -16,7 +16,7 @@ const Play = () => {
           <div className="flex flex-col items-center justify-center w-4/5 text-3xl">
             <p className="w-full text-left">あなたにマッチするのは</p>
             <div className="text-5xl my-10">{ recommend }</div>
-            <p className="w-full text-right">です</p>
+            <p className="w-full text-right">です!</p>
           </div>
           <Button className="bg-gray-100 text-brack border-4 border-black m-2">
             <Link to="/">トップページへ</Link>
