@@ -17,6 +17,19 @@ const MIN_PHASE = 1
 export const action: ActionFunction = async ({ request }) => {
   try {
     const formData = await request.formData();
+    const jsonData = JSON.parse(formData.get('data') as string);
+
+    const response = await fetch('https://einx281re1.execute-api.ap-northeast-1.amazonaws.com/prod/matching/post', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(jsonData),
+    });
+
+    if (response.ok) {
+      console.log("データが送信されました")
+    }
 
     const dataObject: { [key: string]: string } = {};
     formData.forEach((value, key) => {
@@ -66,7 +79,7 @@ const Create = () => {
 
   const handleSubmit = () => {
     const transformedData = transformData();
-    console.log(transformedData)
+    console.log("送信するデータ:", transformedData)
     fetcher.submit(
       { data: JSON.stringify(transformedData) },
       { method: 'POST' }
