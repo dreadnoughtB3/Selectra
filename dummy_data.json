@@ -1,0 +1,36 @@
+{
+  "title": "string",
+  "userName": "string",
+  "description": "string",
+  "paramsName": [
+    "string"
+  ],
+  "recommends": [
+    {
+      "recommendText": "string",
+      "url": "string",
+      "recommendParams": {
+        "paramsName": "string",
+        "value": 0
+      }
+    }
+  ],
+  "createdAt": "string",
+  "questions": [
+    {
+      "question": "string",
+      "choices": [
+        {
+          "choiceId": "string",
+          "choiceName": "string",
+          "paramChanges": [
+            {
+              "targetParamName": "string",
+              "changeValues": 0
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
