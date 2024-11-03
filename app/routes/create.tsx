@@ -1,7 +1,8 @@
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useFetcher } from '@remix-run/react';
 import { json, ActionFunction } from '@remix-run/node';
+import { Link } from "@remix-run/react";
 import BasicInfo from "~/components/create/BasicInfo"
 import InputParameter from "~/components/create/InputParameter"
 import InputQuestions from "~/components/create/InputQuestions"
@@ -31,12 +32,12 @@ export const action: ActionFunction = async ({ request }) => {
       console.log("データが送信されました")
     }
 
-    const dataObject: { [key: string]: string } = {};
-    formData.forEach((value, key) => {
-      dataObject[key] = value as string;
-    });
-
-    return json({ success: true, data: dataObject });
+    const responseData = await response.json();
+    if ('error' in responseData) {
+      return "error"
+    } else {
+      return "success"
+    }
   } catch (error) {
     console.error('Error processing FormData:', error);
     return json({ success: false, error: 'Failed to process FormData' }, { status: 500 });
@@ -50,6 +51,7 @@ const Create = () => {
   const [questions, setQuestions] = useState<QuestionType[]>([]);
   const [recommends, setRecommends] = useState<RecommendsType[]>([]);
   const [currentPhase, setCurrentPhase] = useState(1)
+  const [status, setStatus] = useState("")
 
   const fetcher = useFetcher();
 
@@ -80,8 +82,7 @@ const Create = () => {
 
   const handleSubmit = () => {
     const transformedData = transformData();
-    console.log("送信するデータ:", transformedData)
-    fetcher.submit(
+    const res = fetcher.submit(
       { data: JSON.stringify(transformedData) },
       { method: 'POST' }
     );
@@ -120,22 +121,30 @@ const Create = () => {
     }
   }
 
+  useEffect(() => {
+    if (fetcher.state === 'idle' && fetcher.data) {
+      console.log('Response data:', fetcher.data);
+    }
+  }, [fetcher.state, fetcher.data]);
+
   return (
     <div className="flex flex-col h-screen items-center mt-12 p-2">
       <div className="w-full max-w-2xl">
         {renderPhases()}
       </div>
       <div className="flex gap-2 mt-3">
-        <Button onClick={() => handlePhase(false)}>戻る</Button>
-        <Button onClick={() => handlePhase(true)}>次へ</Button>
+        <Button disabled={currentPhase === MIN_PHASE} onClick={() => handlePhase(false)}>戻る</Button>
+        <Button disabled={currentPhase === MAX_PHASE} onClick={() => handlePhase(true)}>次へ</Button>
       </div>
       <Button
         onClick={handleSubmit}
         disabled={fetcher.state === 'submitting'}
-        className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-blue-300"
+        className="mt-2 px-12 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-blue-300"
       >
-        {fetcher.state === 'submitting' ? 'Submitting...' : 'Submit Data'}
+        {fetcher.state === 'submitting' ? '保存中...' : '保存'}
+        {fetcher.state === 'idle' && status ? <p>{status}</p> : <></> }
       </Button>
+      <Link to="/" className="border py-2 mt-5 rounded px-4">トップページへ戻る</Link>
     </div>
   )
 }
