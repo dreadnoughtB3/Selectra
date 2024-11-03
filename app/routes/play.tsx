@@ -127,7 +127,7 @@ const Play = () => {
   useEffect(() => {
     const fetchMatchingData = async () => {
       try {
-        const response = await fetch(`/matching/match?matchingId=${matchingId}`, {
+        const response = await fetch(`https://einx281re1.execute-api.ap-northeast-1.amazonaws.com/prod/matching/match?matchingId=${matchingId}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json'
