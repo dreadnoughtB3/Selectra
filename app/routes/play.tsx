@@ -6,15 +6,8 @@ import { useFetcher } from '@remix-run/react';
 import { json, ActionFunction } from '@remix-run/node';
 
 export const action: ActionFunction = async ({ request }) => {
-  const data = {
-    matchingId: "1f3f2d2f-7c12-4218-ab2e-1512d4d86835",
-    choiceParams: [
-      { choiceName: "和食好き", value: 10 },
-      { choiceName: "洋食好き", value: 0 },
-      { choiceName: "辛さ耐性", value: 5 },
-      { choiceName: "ベジタリアン適性", value: 0 }
-    ]
-  };
+  const formData = await request.formData();
+  const requestBody = JSON.parse(formData.get("requestBody"));
 
   try {
     const response = await fetch('https://einx281re1.execute-api.ap-northeast-1.amazonaws.com/prod/matching/result_output', {
@@ -22,7 +15,7 @@ export const action: ActionFunction = async ({ request }) => {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(data),
+      body: JSON.stringify(requestBody),
     });
 
     if (!response.ok) {
@@ -37,6 +30,7 @@ export const action: ActionFunction = async ({ request }) => {
     return json({ success: false, error: 'Failed to process FormData' }, { status: 500 });
   }
 };
+
 
 const Play = () => {
   const navigate = useNavigate();
@@ -68,9 +62,31 @@ const Play = () => {
   const [matching, setMatching] = useState(null);
 
   const fetcher = useFetcher();
-  const handleResult = () => {
-    fetcher.submit(null, { method: "post" });
+
+  const handleResult = async () => {
+    const choiceParams = matching.questions.map((q) => ({
+      choiceName: q.selectedOption,
+      value: q.choices.find(choice => choice.choiceName === q.selectedOption)?.paramChanges[0]?.changeValues || 0
+    }));
+  
+    const requestBody = {
+      matchingId: matchingId,
+      choiceParams: choiceParams
+    };
+  
+    const formData = new FormData();
+    formData.append("requestBody", JSON.stringify(requestBody));
+  
+    // Fetcherを使ってデータを送信
+    await fetcher.submit(formData, { method: "post" });
+  
+    if (fetcher.data) {
+      navigate("/result", { state: { recommend: fetcher.data.recommend, url: fetcher.data.url } });
+    }
   };
+  
+  
+  
 
 
   const matchingId =  location.state?.matchingId;
@@ -107,8 +123,7 @@ const Play = () => {
     setMatching({ ...matching, questions: newQuestions });
   };
 
-  const handleSubmit = async () => {
-  };
+  
 
   if ( matching == null ){
     return (
@@ -155,7 +170,7 @@ const Play = () => {
           className="bg-gray-100 text-brack border-4 border-black m-2">
             データ取得
           </Button>
-          {fetcher.state === "submitting" ? (
+          {/* {fetcher.state === "submitting" ? (
               <p>データを取得中...</p>
             ) : fetcher.data ? (
               // 取得結果の表示
@@ -164,7 +179,7 @@ const Play = () => {
               ) : (
                 <pre>{JSON.stringify(fetcher.data, null, 2)}</pre>
               )
-            ) : null}
+            ) : null} */}
         </div>
       </div>
     )
