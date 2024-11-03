@@ -121,17 +121,17 @@ const Play = () => {
     }[];
   }
 
-  const matchingId =  location.state?.matchingId;
+  // const matchingId =  location.state?.matchingId;
+  const matchingId = 1;
 
-  useEffect(() =>{
+  useEffect(() => {
     const fetchMatchingData = async () => {
       try {
-        const response = await fetch(`/matching/match`, {
-          method: 'POST',
+        const response = await fetch(`/matching/match?matchingId=${matchingId}`, {
+          method: 'GET',
           headers: {
             'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ matchingId })
+          }
         });
         const data: Matching = await response.json();
         
@@ -148,7 +148,8 @@ const Play = () => {
     };
 
     fetchMatchingData();
-  },[matchingId]);
+  }, [matchingId]);
+
 
   const handleOptionChange = (index: number, value: string) => {
     const newQuestions = matching.questions.map((q, i) =>
@@ -159,14 +160,16 @@ const Play = () => {
 
   const handleSubmit = async () => {
     const choiceParams = matching.questions.map((q) => ({
-      choiceId: q.selectedOption,
+      choiceName: q.selectedOption,
       value: q.choices.find(choice => choice.choiceName === q.selectedOption)?.paramChanges[0]?.changeValues || 0
     }));
     
     const requestBody = {
-      matchingId: "exampleMatchingId", // 適切なmatchingIdを設定
+      matchingId: matchingId, // 適切なmatchingIdを設定
       choiceParams: choiceParams
     };
+
+    console.log(requestBody);
 
     try {
       const response = await fetch('/matching/result_output', {
