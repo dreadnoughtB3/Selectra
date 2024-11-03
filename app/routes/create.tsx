@@ -60,6 +60,13 @@ const Create = () => {
       authorName: basicInfo.author,
       description: basicInfo.description,
       paramsName: parameters,
+      recommends: recommends.map(recommend => ({
+        ...recommend,
+        recommendParams: recommend.recommendParams.reduce((acc, param) => {
+          acc[param.paramsName] = param.value;
+          return acc;
+        }, {} as Record<string, number>)
+      })),
       createdAt: new Date().toISOString(),
       questions: questions.map((question, qIndex) => ({
         ...question,
