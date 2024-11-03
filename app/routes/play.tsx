@@ -60,37 +60,30 @@ const Play = () => {
   }
 
   const [matching, setMatching] = useState(null);
+  const [currentStatus, setCurrentStatus] = useState(false)
 
   const fetcher = useFetcher();
 
   const handleResult = async () => {
+    console.log(matching)
     const choiceParams = matching.questions.map((q) => ({
       choiceName: q.selectedOption,
       value: q.choices.find(choice => choice.choiceName === q.selectedOption)?.paramChanges[0]?.changeValues || 0
     }));
-  
+
     const requestBody = {
       matchingId: matchingId,
       choiceParams: choiceParams
     };
-  
+
     const formData = new FormData();
     formData.append("requestBody", JSON.stringify(requestBody));
-  
-    // Fetcherを使ってデータを送信
+    setCurrentStatus(true)
+
     await fetcher.submit(formData, { method: "post" });
-  
-    if (fetcher.data) {
-      navigate("/result", { state: { recommend: fetcher.data.recommend, url: fetcher.data.url } });
-    }
   };
-  
-  
-  
 
-
-  const matchingId =  location.state?.matchingId;
-  // const matchingId = "1f3f2d2f-7c12-4218-ab2e-1512d4d86835";
+  const matchingId = location.state?.matchingId;
 
   useEffect(() => {
     const fetchMatchingData = async () => {
@@ -99,12 +92,12 @@ const Play = () => {
           method: 'GET',
         });
         const data: Matching = await response.json();
-        
+
         setMatching({
           ...data,
           questions: data.questions.map(q => ({
             ...q,
-            selectedOption: null // selectedOptionを初期化
+            selectedOption: null
           }))
         });
       } catch (error) {
@@ -112,8 +105,15 @@ const Play = () => {
       }
     };
 
+
+    if (fetcher.state === 'idle' && fetcher.data && currentStatus) {
+      console.log(fetcher.data)
+      navigate("/result", { state: { recommend: fetcher.data.recommend, url: fetcher.data.url } });
+    }
+
+
     fetchMatchingData();
-  }, []);
+  }, [fetcher.state]);
 
 
   const handleOptionChange = (index: number, value: string) => {
@@ -121,6 +121,7 @@ const Play = () => {
       i === index ? { ...q, selectedOption: value } : q
     );
     setMatching({ ...matching, questions: newQuestions });
+    console.log(matching)
   };
 
   
@@ -133,55 +134,44 @@ const Play = () => {
     )
   }
   return (
-      <div className="flex w-full h-screen items-center justify-center bg-blue-900">
-        <div className="flex flex-col items-center justify-center w-4/5 h-4/5 bg-white">
-          <div id="title" className="text-4xl">
-            <span className="text-5xl">{ matching.title}</span>
-          </div>
-          <div id="introduction" 
-          className="flex flex-col items-center justify-center w-3/5 bg-blue-50 border-2 m-3">
-            { matching.authorName}
-            { matching.description }
-          </div>
-          <div id="questions" className="flex flex-col items-center justify-center w-3/5">
-            { matching.questions.map((q, index) => (
-              <div key={index}
-              className="flex flex-col items-center justify-center w-full bg-blue-50 border-2 m-3">
-                <div className="flex flex-col items-center justify-center w-full">
-                  <p>Q.{index+1}, {q.question}</p>
-                  <div>
-                    {q.choices.map((choice, choiceIndex) => (
-                      <label key={choiceIndex} className="mx-2">
-                        {choice.choiceName}
-                        <input
-                          type="radio"
-                          value={choice.choiceId}
-                          checked={q.selectedOption === choice.choiceName}
-                          onChange={() => handleOptionChange(index, choice.choiceName)}
-                        />
-                      </label>
-                    ))}
-                  </div>
-                </div>
-            </div>
-            ))}
-          </div>
-          <Button onClick={ handleResult }
-          className="bg-gray-100 text-brack border-4 border-black m-2">
-            データ取得
-          </Button>
-          {/* {fetcher.state === "submitting" ? (
-              <p>データを取得中...</p>
-            ) : fetcher.data ? (
-              // 取得結果の表示
-              fetcher.data.error ? (
-                <p>{fetcher.data.error}</p>
-              ) : (
-                <pre>{JSON.stringify(fetcher.data, null, 2)}</pre>
-              )
-            ) : null} */}
+    <div className="flex w-full h-screen items-center justify-center">
+      <div className="flex p-6 flex-col items-center justify-center rounded-lg border">
+        <div id="title" className="text-4xl">
+          <span className="text-5xl">{ matching.title}</span>
         </div>
+        <div id="introduction" className="flex flex-col min-w-fit p-4 items-center justify-center bg-blue-50 border-2 m-3">
+          <div>作成者: { matching.authorName }</div>
+          <div className="my-1">{ matching.description }</div>
+        </div>
+        <div id="questions" className="flex flex-col items-center justify-center ">
+          { matching.questions.map((q, index) => (
+            <div key={index}
+            className="flex flex-col w-full px-2 items-center justify-center bg-blue-50 border-2 m-3">
+              <div className="flex flex-col items-center justify-center w-full">
+                <p>Q.{index+1}, {q.question}</p>
+                <div>
+                  {q.choices.map((choice, choiceIndex) => (
+                    <label key={choiceIndex} className="mx-2">
+                      {choice.choiceName}
+                      <input
+                        type="radio"
+                        value={choice.choiceId}
+                        checked={q.selectedOption === choice.choiceName}
+                        onChange={() => handleOptionChange(index, choice.choiceName)}
+                      />
+                    </label>
+                  ))}
+                </div>
+              </div>
+          </div>
+          ))}
+        </div>
+        <Button onClick={ handleResult }
+        className="bg-gray-100 text-brack border-4 border-black m-2">
+          {fetcher.state === 'submitting' ? '照合中...' : '結果を見る'}
+        </Button>
       </div>
+    </div>
     )
 }
 

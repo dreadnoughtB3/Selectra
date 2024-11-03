@@ -84,13 +84,13 @@ export default function Index() {
   
 
   return (
-    <div className="flex flex-col  w-full h-screen overflow-y-auto items-center justify-center bg-blue-900">
-      <div className="flex flex-col items-center  w-full min-h-full">
-        <div className="text-6xl text-white my-5">セレクトラ</div>
+    <div className="flex flex-col  w-full h-screen overflow-y-auto items-center justify-center">
+      <div className="flex flex-col items-center w-full min-h-screen">
+        <div className="text-6xl font-bold my-5">セレクトラ</div>
         <Button className="bg-gray-100 text-black border-4 border-black m-2">
           <Link to="/create" className="">つくる</Link>
         </Button>
-        <div className="text-white">
+        <div className="">
           あなたにマッチする○○選んでみませんか？
         </div>
         <div className="flex flex-row flex-wrap items-center justify-center w-4/5 gap-10 mt-4">
@@ -100,7 +100,7 @@ export default function Index() {
               <div className="flex items-center justify-center border border w-full h-3/5 text-xl">{ m.title }</div>
               <div className="border border w-full h-2/5 overflow-hidden text-ellipsis p-1 bg-blue-50">
                 <p className="text-xs pb-1">{ m.authorName }</p>
-                <p className="truncate">{ m.description }</p>
+                <p className="truncate text-sm">{ m.description }</p>
               </div>
             </div>
           ))}
