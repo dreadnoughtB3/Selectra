@@ -6,96 +6,96 @@ import { Button } from "~/components/ui/button";
 const Play = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [matching, setMatching] = useState({
-    title: "パリーグ球団",
-    authorName: "ななし",
-    description: "独断と偏見であなたが推すべきパリーグの球団をお教えします！",
-    params: [
-      "param1",
-      "param2",
-      "param3"
-  ],
-    questions: [
-      {
-        question: "あなたの応援スタイルは？",
-        choices: [
-          {
-            choiceId: "0",
-            choiceName: "勝利至上主義",
-            paramChanges: [
-              {
-                targetParamName: "param1",
-                changeValues: 100
-              }
-            ]
-          },
-          {
-            choiceId: "1",
-            choiceName: "負けても応援",
-            paramChanges: [
-              {
-                targetParamName: "param1",
-                changeValues: 0
-              }
-            ]
-          }
-        ],
-        selectedOption: null
-      },
-      {
-        question: "住むなら？",
-        choices: [
-          {
-            choiceId: "0",
-            choiceName: "田舎",
-            paramChanges: [
-              {
-                targetParamName: "param2",
-                changeValues: 100
-              }
-            ]
-          },
-          {
-            choiceId: "1",
-            choiceName: "都会",
-            paramChanges: [
-              {
-                targetParamName: "param2",
-                changeValues: 0
-              }
-            ]
-          }
-        ],
-        selectedOption: null
-      },
-      {
-        question: "お金は好き？",
-        choices: [
-          {
-            choiceId: "0",
-            choiceName: "大好き",
-            paramChanges: [
-              {
-                targetParamName: "param3",
-                changeValues: 100
-              }
-            ]
-          },
-          {
-            choiceId: "1",
-            choiceName: "そうでもない",
-            paramChanges: [
-              {
-                targetParamName: "param3",
-                changeValues: 0
-              }
-            ]
-          }
-        ],
-        selectedOption: null
-      }
-    ]
-  });
+  // const [matching, setMatching] = useState({
+  //   title: "パリーグ球団",
+  //   authorName: "ななし",
+  //   description: "独断と偏見であなたが推すべきパリーグの球団をお教えします！",
+  //   params: [
+  //     "param1",
+  //     "param2",
+  //     "param3"
+  // ],
+  //   questions: [
+  //     {
+  //       question: "あなたの応援スタイルは？",
+  //       choices: [
+  //         {
+  //           choiceId: "0",
+  //           choiceName: "勝利至上主義",
+  //           paramChanges: [
+  //             {
+  //               targetParamName: "param1",
+  //               changeValues: 100
+  //             }
+  //           ]
+  //         },
+  //         {
+  //           choiceId: "1",
+  //           choiceName: "負けても応援",
+  //           paramChanges: [
+  //             {
+  //               targetParamName: "param1",
+  //               changeValues: 0
+  //             }
+  //           ]
+  //         }
+  //       ],
+  //       selectedOption: null
+  //     },
+  //     {
+  //       question: "住むなら？",
+  //       choices: [
+  //         {
+  //           choiceId: "0",
+  //           choiceName: "田舎",
+  //           paramChanges: [
+  //             {
+  //               targetParamName: "param2",
+  //               changeValues: 100
+  //             }
+  //           ]
+  //         },
+  //         {
+  //           choiceId: "1",
+  //           choiceName: "都会",
+  //           paramChanges: [
+  //             {
+  //               targetParamName: "param2",
+  //               changeValues: 0
+  //             }
+  //           ]
+  //         }
+  //       ],
+  //       selectedOption: null
+  //     },
+  //     {
+  //       question: "お金は好き？",
+  //       choices: [
+  //         {
+  //           choiceId: "0",
+  //           choiceName: "大好き",
+  //           paramChanges: [
+  //             {
+  //               targetParamName: "param3",
+  //               changeValues: 100
+  //             }
+  //           ]
+  //         },
+  //         {
+  //           choiceId: "1",
+  //           choiceName: "そうでもない",
+  //           paramChanges: [
+  //             {
+  //               targetParamName: "param3",
+  //               changeValues: 0
+  //             }
+  //           ]
+  //         }
+  //       ],
+  //       selectedOption: null
+  //     }
+  //   ]
+  // });
   // const [matching, setMatching] = useState<Matching | null>(null);
   interface Matching {
     title: string;
@@ -121,17 +121,20 @@ const Play = () => {
     }[];
   }
 
+  const [matching, setMatching] = useState([]);
+
+
   // const matchingId =  location.state?.matchingId;
-  const matchingId = 1;
+  const matchingId = "1f3f2d2f-7c12-4218-ab2e-1512d4d86835";
 
   useEffect(() => {
     const fetchMatchingData = async () => {
       try {
         const response = await fetch(`https://einx281re1.execute-api.ap-northeast-1.amazonaws.com/prod/matching/match?matchingId=${matchingId}`, {
           method: 'GET',
-          headers: {
-            'Content-Type': 'application/json'
-          }
+          // headers: {
+          //   'Content-Type': 'application/json'
+          // }
         });
         const data: Matching = await response.json();
         
